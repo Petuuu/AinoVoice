@@ -9,8 +9,11 @@ from openai.helpers import LocalAudioPlayer
 from fastapi.responses import StreamingResponse
 from pathlib import Path
 from sqlmodel import Session
-from db import init_db, get_session, AlertRecord
+from db import init_db
 import os, json, re, traceback
+import sqlite3
+from db import save_classification_from_output
+
 
 load_dotenv()
 
@@ -88,7 +91,9 @@ async def process_audio(uploaded_file: UploadFile = File(...)):
         )
 
         print("CLASSIFICATION: ", classifications_response)
-
+        classification = classifications_response.output[-1].content[0].text
+        print(classification)
+        save_classification_from_output(classification)
         voice_response = client.responses.create(
             model="o4-mini",
             input=f"""An elderly person is telling you about their day. Analyze their message: "{prompt}" and comfort them.
