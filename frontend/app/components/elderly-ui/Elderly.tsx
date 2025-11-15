@@ -29,10 +29,22 @@ export default function Elderly({ changeMode }: Props) {
             const file = new File(buffer as any, "audio.mp3", { type: blob.type });
             const form = new FormData();
             form.append('uploaded_file', file, 'audio.mp3');
+
             fetch(`${API_BASE}/api/checkin/voice`, {
                 method: "POST",
                 body: form,
-            }).catch((e: any) => console.error("upload failed:", e));
+            })
+            .then(async (res) => {
+                if (res.ok) {
+                    const audioBlob = await res.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audio = new Audio(audioUrl);
+                    audio.play();
+                } else {
+                    console.log("error")
+            }})
+            .catch((e: any) => console.error("upload failed:", e));
+
             setListening(false);
             listeningRef.current = false;
         }).catch((e: any) => console.error("recorder.getMp3() failed:", e));
