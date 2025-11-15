@@ -15,6 +15,7 @@ type Props = {
 
 export default function Elderly({ changeMode }: Props) {
     const [listening, setListening] = useState<boolean>(false);
+    const [thinking, setThinking] = useState<boolean>(false);
     const listeningRef = useRef(false);
     const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -30,6 +31,9 @@ export default function Elderly({ changeMode }: Props) {
 
     const stopListening = () => {
         if (!listeningRef.current) return;
+
+        setThinking(true);
+
         recorder.stop().getMp3().then(([buffer, blob]: [ArrayBuffer[], Blob]) => {
             const file = new File(buffer as any, "audio.mp3", { type: blob.type });
             const form = new FormData();
@@ -48,28 +52,35 @@ export default function Elderly({ changeMode }: Props) {
                 console.log("error")
             }
         })
-            .catch((e: any) => console.error("upload failed:", e));
-
+        .catch((e: any) => console.error("upload failed:", e))
+        .finally(() => {
+            setThinking(false);       // <-- keep here
             setListening(false);
             listeningRef.current = false;
-        }).catch((e: any) => console.error("recorder.getMp3() failed:", e));
-    };
+        });
+    }).catch((e: any) => {
+        console.error("recorder.getMp3() failed:", e);
+        setThinking(false); // <-- only needed here for errors
+    });
+};
 
     return (
         <div>
             <h1 className="text-6xl font-bold p-5"> Check-in companion </h1>
+            <Greeting listening={listening} />
 
-            {thinking && !listening && (
-                <div
+            {thinking
+                ? <div
                   className="flex justify-center mt-6 text-3xl font-semibold text-gray-700 animate-pulse"
                   aria-live="polite"
                 >
-                    AI is thinking…
+                    Thinking with you...
                 </div>
-            )}
+                : null
+            }
 
             <div className="flex flex-col items-center justify-center mt-10">
-                {listening
+                {listening && !thinking
                     ? <Listening onStop={stopListening} />
                     : <TalkButton onStart={startListening} />
                  }

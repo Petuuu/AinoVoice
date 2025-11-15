@@ -8,8 +8,8 @@ type Props = {
 
 export default function Alert({ mood, energy, loneliness, risk, summary }: Props) {
     const colorMap: Record<number, string> = {
-        1: "bg-orange-300",
-        2: "bg-red-300",
+        1: "bg-[#F2D5B8]",
+        2: "bg-[#F2B8B8]",
     };
 
     if (risk in colorMap) {
