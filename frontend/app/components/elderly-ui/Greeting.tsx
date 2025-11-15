@@ -28,10 +28,10 @@ export default function Greeting({ listening }: Props) {
 
     return (
         <div className="flex justify-center mt-40">
-            <p className="text-6xl font-bold">
+            <p className="text-5xl font-bold">
                 {listening
-                    ? "listening..."
-                    : (greeting ?? "Hello")
+                    ? "Listening..."
+                    : (greeting)
                 }
             </p>
         </div>
