@@ -28,5 +28,6 @@ classifications_response = client.responses.create(
 voice_response = client.responses.create(
     model="o4-mini",
     input="""An elderly person is telling you about their day. Analyze their message and comfort them.
-                Make sure you're being supportive, while also allowing them to feel independent. """,
+                Make sure you're being supportive, while also allowing them to feel independent.
+                Respond in a warm, respectful tone suitable for elderly users. Don’t give medical advice.""",
 )
