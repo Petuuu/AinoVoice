@@ -4,7 +4,7 @@ type Props = {
     listening: boolean
 };
 
-export default function IntroText({ listening }: Props) {
+export default function Greeting({ listening }: Props) {
     const array = ["A", "B", "C"]
     const [randomElement, setRandomElement] = useState<string>();
 

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react';
-import IntroText from './IntroText';
+import Greeting from './Greeting';
 import TalkButton from './TalkButton';
 import Listening from './Listening';
 
@@ -12,7 +12,7 @@ export default function Elderly() {
     return (
         <div>
             <h1 className="text-7xl font-bold"> Check-in companion </h1>
-            <IntroText listening={listening} />
+            <Greeting listening={listening} />
 
             <div className="flex flex-col items-center justify-center mt-30 ">
                 {listening
