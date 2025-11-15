@@ -1,18 +1,15 @@
-"use client";
+type Props = {
+    onStart: () => void
+}
 
-import type { FormEvent } from 'react';
-
-export default function TalkButton() {
-    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        alert("Start listening");
-    }
-
+export default function TalkButton({ onStart }: Props) {
     return (
-        <form onSubmit={handleSubmit}>
-            <button className="bg-blue-500 hover:bg-blue-700 text-white text-5xl font-bold py-4 px-6 rounded">
-                Talk to your companion
+        <div className="flex justify-center mt-80">
+            <button
+                className="bg-blue-500 hover:bg-blue-700 size-90 text-white text-5xl font-bold rounded-full"
+                onClick={onStart}>
+                Talk to<br />your companion
             </button>
-        </form>
+        </div>
     );
 }
