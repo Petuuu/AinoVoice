@@ -2,20 +2,20 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import UploadFile, File, HTTPException
 from typing import Optional
-import os
-import traceback
 from openai import OpenAI, AsyncOpenAI
 from dotenv import load_dotenv
 import asyncio
 from openai.helpers import LocalAudioPlayer
 from fastapi.responses import StreamingResponse
 from pathlib import Path
-
+from sqlmodel import Session
+from db import init_db, get_session, AlertRecord
+import os, json, re, traceback
 
 load_dotenv()
 
 app = FastAPI(title="Daily Check-In Companion API")
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY")) if os.getenv("OPENAI_API_KEY") else None
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,13 +24,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-transcription_global = None
+transcription_global: Optional[str] = None
 
+@app.on_event("startup")
+def _startup():
+    try:
+        init_db()
+    except Exception as e:
+        print("[startup:init_db]", e)
 
 @app.get("/ping")
 async def ping():
     return {"message": "pong"}
-
 
 @app.post("/api/checkin/voice", tags=["Check-In"])
 async def process_audio(uploaded_file: UploadFile = File(...)):
@@ -55,7 +60,6 @@ async def process_audio(uploaded_file: UploadFile = File(...)):
             text = "No OpenAI API key configured; transcription skipped."
 
         transcription_global = text
-        print("TRANSCRIPT", text)
 
         # GPT CONFIG
 

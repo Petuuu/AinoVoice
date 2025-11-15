@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useRef } from 'react';
 import Greeting from './Greeting';
 import TalkButton from './TalkButton';
@@ -8,20 +10,23 @@ import MicRecorder from "mic-recorder-to-mp3";
 const recorder = new MicRecorder({ bitRate: 128 });
 
 type Props = {
-    changeMode: () => void
+  changeMode: () => void
 };
 
 export default function Elderly({ changeMode }: Props) {
     const [listening, setListening] = useState<boolean>(false);
-    const listeningRef = useRef(false)
+    const listeningRef = useRef(false);
     const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
     const startListening = () => {
-        recorder.start().then(() => {
-            setListening(true);
-            listeningRef.current = true;
-        }).catch((e: any) => console.error("recorder.start() failed:", e));
-    }
+      recorder.start()
+          .then(() => {
+              setListening(true);
+              listeningRef.current = true;
+          })
+          .catch((e: any) => console.error("recorder.start() failed:", e));
+    };
+
 
     const stopListening = () => {
         if (!listeningRef.current) return;
@@ -54,13 +59,20 @@ export default function Elderly({ changeMode }: Props) {
         <div>
             <h1 className="text-6xl font-bold p-5"> Check-in companion </h1>
 
-            <Greeting listening={listening} />
+            {thinking && !listening && (
+                <div
+                  className="flex justify-center mt-6 text-3xl font-semibold text-gray-700 animate-pulse"
+                  aria-live="polite"
+                >
+                    AI is thinking…
+                </div>
+            )}
 
             <div className="flex flex-col items-center justify-center mt-10">
                 {listening
                     ? <Listening onStop={stopListening} />
                     : <TalkButton onStart={startListening} />
-                }
+                 }
             </div>
 
             <ModeButton changeMode={changeMode} />
