@@ -7,16 +7,16 @@ type Props = {
 };
 
 export default function Listening({ onStop }: Props) {
-    const handleClick = () => {
-        recorder.stop().getMp3().then(([buffer, blob]: [ArrayBuffer[], Blob]) => {
-            const file = new File(buffer, "recording.mp3", { type: blob.type});
-            fetch("api/process-audio", {
-                method: 'POST',
-                body: file,
-                headers : {'Content-Type': 'audio/mpeg'},
-            });
-            onStop();
+    const handleClick = async () => {
+        recorder.stop();
+        const [buffer, blob]: [ArrayBuffer[], Blob] = await recorder.getMp3();
+        const file = new File(buffer, "audio.mp3", { type: blob.type });
+        fetch("/api/checkin/voice", {
+            method: 'POST',
+            body: file,
+            headers: { 'Content-Type': 'audio/mpeg' },
         });
+        onStop();
     };
     return (
         <button
