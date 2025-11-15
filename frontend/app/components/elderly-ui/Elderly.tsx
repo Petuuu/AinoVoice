@@ -52,11 +52,11 @@ export default function Elderly({ changeMode }: Props) {
 
     return (
         <div>
-            <h1 className="text-7xl font-bold"> Check-in companion </h1>
+            <h1 className="text-6xl font-bold p-5"> Check-in companion </h1>
 
             <Greeting listening={listening} />
 
-            <div className="flex flex-col items-center justify-center mt-30 ">
+            <div className="flex flex-col items-center justify-center mt-10">
                 {listening
                     ? <Listening onStop={stopListening} />
                     : <TalkButton onStart={startListening} />

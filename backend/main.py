@@ -69,7 +69,7 @@ async def process_audio(uploaded_file: UploadFile = File(...)):
                     Use the following rules for classification:
                     1) Mood: 3-positive / 2-neutral / 1-low / 0-very low
                     2) Energy: 3-active / 2-tired / 1-confused / 0-overwhelmed
-                    3) Loneliness: 3-not lonely / 2-missing family / 1-lonely / 0-very lonely
+                    3) Loneliness: 3-very lonely / 2-lonely / 1-missing family / 0-not lonely
                     4) Risk level: 2-High concern (Explicit risk phrases (fall, pain, scared) OR no response to 2 check-ins) / 1 – Soft concern (Mood worse than usual OR signs of loneliness) / 0 - OK (Mood stable or improved, no risk phrases)
                     5) Short summary: for example "User feels lonely and a bit tired but no acute danger."
                     IMPORTANT! Make sure to format your response the following way:
@@ -89,7 +89,8 @@ async def process_audio(uploaded_file: UploadFile = File(...)):
             model="o4-mini",
             input=f"""An elderly person is telling you about their day. Analyze their message: "{prompt}" and comfort them.
                         Make sure you're being supportive, while also allowing them to feel independent.
-                        Respond in a warm, respectful tone suitable for elderly users. Don’t give medical advice.""",
+                        Respond in a warm, respectful tone suitable for elderly users. Don’t give medical advice. Make your answer 1-2 sentences long.
+                        Leave an open ending or ask a question at the end, so the conversation flows naturally.""",
         )
 
         # TTS CONFIG

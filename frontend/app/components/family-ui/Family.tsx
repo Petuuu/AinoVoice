@@ -7,7 +7,7 @@ type Props = {
 export default function Family({changeMode}: Props) {
     return (
         <div>
-            <h1 className="text-7xl font-bold"> Family dashboard </h1>
+            <h1 className="text-6xl font-bold p-5"> Family dashboard </h1>
             <ModeButton changeMode={changeMode} />
         </div>
     );
