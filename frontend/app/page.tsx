@@ -1,3 +1,5 @@
+"use client";
+
 import Elderly from './components/elderly-ui/Elderly';
 import Family from './components/family-ui/Family';
 
@@ -8,10 +10,9 @@ export default function Home() {
 
   return (
     <div className="m-3">
-      <h1 className="text-7xl font-bold"> Check-in companion </h1>
         {mode == 'elderly'
-          ? <Elderly changeMode={() => setMode('elderly')} />
-          : <Family changeMode{() => setMode('family')} />
+          ? <Elderly changeMode={() => setMode('family')} />
+          : <Family changeMode={() => setMode('elderly')} />
         }
     </div>
   );
