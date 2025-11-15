@@ -35,14 +35,14 @@ export default function Elderly({ changeMode }: Props) {
                 body: form,
             })
             .then(async (res) => {
-                if (res.ok) {
-                    const audioBlob = await res.blob();
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    const audio = new Audio(audioUrl);
-                    audio.play();
-                } else {
-                    console.log("error")
-            }})
+            if (res.ok) {
+                const audio = new Audio("/speech.mp3");
+                audio.autoplay = true;
+                audio.play().catch(e => console.error("autoplay failed:", e));
+            } else {
+                console.log("error")
+            }
+        })
             .catch((e: any) => console.error("upload failed:", e));
 
             setListening(false);

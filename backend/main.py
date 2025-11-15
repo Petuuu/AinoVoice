@@ -107,7 +107,7 @@ async def process_audio(uploaded_file: UploadFile = File(...)):
                         Pronunciation: Clear and precise, emphasizing key reassurances (\"smoothly,\" \"quickly,\" \"promptly\") to reinforce confidence.
                         Pauses: Brief pauses after offering assistance or requesting details, highlighting willingness to listen and support."""
 
-        speech_file_path = "speech.mp3"
+        speech_file_path = "../frontend/public/speech.mp3"
         with client.audio.speech.with_streaming_response.create(
             model="gpt-4o-mini-tts",
             voice="echo",
