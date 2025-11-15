@@ -8,5 +8,3 @@ transcription = client.audio.transcriptions.create(
     file=audio_file,
     prompt="The following conversation is an elderly person telling you about their day. Please be patient and supportive and pay attention to their emotions.",
 )
-
-print(transcription.text)

@@ -2,10 +2,11 @@ import asyncio
 
 from openai import AsyncOpenAI
 from openai.helpers import LocalAudioPlayer
+from gpt_config import voice_response
 
 openai = AsyncOpenAI()
 
-input = ""  # pharase
+input = voice_response.output
 
 instructions = """Voice Affect: Calm, composed, and reassuring; project quiet authority and confidence.
                 Tone: Sincere, empathetic, and gently authoritative—express genuine apology while conveying competence.
@@ -19,6 +20,7 @@ async def main() -> None:
     async with openai.audio.speech.with_streaming_response_create(
         model="gpt-4o-mini-tts",
         voice="echo",
+        input=input,
         instructions=instructions,
         response_format="pcm",
     ) as response:
