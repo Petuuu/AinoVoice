@@ -4,20 +4,13 @@ from fastapi import UploadFile, File, HTTPException
 from typing import Optional
 import os
 import traceback
+from openai import OpenAI
+from dotenv import load_dotenv
 
-try:
-    from openai import OpenAI
-except Exception:
-    OpenAI = None
+load_dotenv()
 
 app = FastAPI(title="Daily Check-In Companion API")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-client = None
-if OpenAI is not None and OPENAI_API_KEY:
-    try:
-        client = OpenAI(api_key=OPENAI_API_KEY)
-    except Exception:
-        client = None
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
