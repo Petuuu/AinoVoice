@@ -5,7 +5,7 @@ type Props = {
 export default function TalkButton({ onStart }: Props) {
     return (
         <button
-            className="bg-blue-500 hover:bg-blue-700 size-90 text-white text-5xl font-bold rounded-full"
+            className="bg-[#8BBE6F] hover:bg-[#71B04F] size-90 text-[#D6E8CC] text-4xl font-bold rounded-full"
             onClick={onStart}>
             Talk to<br />your companion
         </button>

@@ -14,83 +14,68 @@ type Props = {
 };
 
 export default function Elderly({ changeMode }: Props) {
-  const [listening, setListening] = useState<boolean>(false);
-  const [thinking, setThinking] = useState<boolean>(false);
-  const listeningRef = useRef(false);
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+    const [listening, setListening] = useState<boolean>(false);
+    const listeningRef = useRef(false);
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-  const startListening = () => {
-    recorder.start()
-      .then(() => {
-        setListening(true);
-        listeningRef.current = true;
-      })
-      .catch((e: any) => console.error("recorder.start() failed:", e));
-  };
+    const startListening = () => {
+      recorder.start()
+          .then(() => {
+              setListening(true);
+              listeningRef.current = true;
+          })
+          .catch((e: any) => console.error("recorder.start() failed:", e));
+    };
 
-  const stopListening = async () => {
-    if (!listeningRef.current) return;
 
-    try {
-      // Stop recording and get MP3
-      const [buffer, blob] = await recorder.stop().getMp3() as [ArrayBuffer[], Blob];
-      const file = new File(buffer as any, "audio.mp3", { type: blob.type });
-      const form = new FormData();
-      form.append('uploaded_file', file, 'audio.mp3');
+    const stopListening = () => {
+        if (!listeningRef.current) return;
+        recorder.stop().getMp3().then(([buffer, blob]: [ArrayBuffer[], Blob]) => {
+            const file = new File(buffer as any, "audio.mp3", { type: blob.type });
+            const form = new FormData();
+            form.append('uploaded_file', file, 'audio.mp3');
 
-      // Switch from Listening to Thinking (upload/processing in progress)
-      setListening(false);
-      listeningRef.current = false;
-      setThinking(true);
+            fetch(`${API_BASE}/api/checkin/voice`, {
+                method: "POST",
+                body: form,
+            })
+            .then(async (res) => {
+            if (res.ok) {
+                const audio = new Audio("/speech.mp3");
+                audio.autoplay = true;
+                audio.play().catch(e => console.error("autoplay failed:", e));
+            } else {
+                console.log("error")
+            }
+        })
+            .catch((e: any) => console.error("upload failed:", e));
 
-      const res = await fetch(`${API_BASE}/api/checkin/voice`, {
-        method: "POST",
-        body: form,
-      });
+            setListening(false);
+            listeningRef.current = false;
+        }).catch((e: any) => console.error("recorder.getMp3() failed:", e));
+    };
 
-      if (!res.ok) {
-        const errTxt = await res.text().catch(() => "");
-        console.error("Upload failed:", errTxt || res.statusText);
-        return;
-      }
+    return (
+        <div>
+            <h1 className="text-6xl font-bold p-5"> Check-in companion </h1>
 
-      const audio = new Audio("/speech.mp3");
-      audio.autoplay = true;
-      try {
-        await audio.play();
-      } catch (e) {
-        console.error("autoplay failed:", e);
-      }
-    } catch (e) {
-      console.error("stop flow error:", e);
-    } finally {
-      setThinking(false);
-    }
-  };
+            {thinking && !listening && (
+                <div
+                  className="flex justify-center mt-6 text-3xl font-semibold text-gray-700 animate-pulse"
+                  aria-live="polite"
+                >
+                    AI is thinking…
+                </div>
+            )}
 
-  return (
-    <div>
-      <h1 className="text-7xl font-bold"> Check-in companion </h1>
+            <div className="flex flex-col items-center justify-center mt-10">
+                {listening
+                    ? <Listening onStop={stopListening} />
+                    : <TalkButton onStart={startListening} />
+                 }
+            </div>
 
-      <Greeting listening={listening} />
-
-      {thinking && !listening && (
-        <div
-          className="flex justify-center mt-6 text-3xl font-semibold text-gray-700 animate-pulse"
-          aria-live="polite"
-        >
-          AI is thinking…
+            <ModeButton changeMode={changeMode} />
         </div>
-      )}
-
-      <div className="flex flex-col items-center justify-center mt-30">
-        {listening
-          ? <Listening onStop={stopListening} />
-          : <TalkButton onStart={startListening} />
-        }
-      </div>
-
-      <ModeButton changeMode={changeMode} />
-    </div>
-  );
+    );
 }
