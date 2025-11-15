@@ -1,6 +1,6 @@
 type Props = {
     onStart: () => void
-}
+};
 
 export default function TalkButton({ onStart }: Props) {
     return (

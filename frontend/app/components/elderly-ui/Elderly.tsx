@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import IntroText from './IntroText';
-import TalkButton from "./TalkButton"
-import Listening from "./Listening"
+import TalkButton from './TalkButton';
+import Listening from './Listening';
 
 
 export default function Elderly() {
@@ -21,5 +21,5 @@ export default function Elderly() {
                 }
             </div>
         </div>
-    )
+    );
 }
