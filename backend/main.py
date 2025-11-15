@@ -4,8 +4,10 @@ from fastapi import UploadFile, File, HTTPException
 from typing import Optional
 import os
 import traceback
-from openai import OpenAI
+from openai import OpenAI, AsyncOpenAI
 from dotenv import load_dotenv
+import asyncio
+from openai.helpers import LocalAudioPlayer
 
 load_dotenv()
 
@@ -19,6 +21,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+transcription_global = None
+
 
 @app.get("/ping")
 async def ping():
@@ -27,6 +31,7 @@ async def ping():
 
 @app.post("/api/checkin/voice", tags=["Check-In"])
 async def process_audio(uploaded_file: UploadFile = File(...)):
+    global transcription_global
     try:
         contents = await uploaded_file.read()
         with open("audio.mp3", "wb") as f:
@@ -46,8 +51,71 @@ async def process_audio(uploaded_file: UploadFile = File(...)):
         else:
             text = "No OpenAI API key configured; transcription skipped."
 
+        transcription_global = text
         print(text)
-        return {"transcription": text}
+
+        # GPT CONFIG
+
+        prompt = transcription_global
+
+        classifications_response = client.responses.create(
+            model="o4-mini",
+            input="""You are an assistant analyzing check-in phrases from older adults.
+                    Classify this {prompt} into: mood (0–3), energy (0–3), loneliness (0–3), risk (0–2), and give a short explanation.
+                    Use the following rules for classification:
+                    1) Mood: 3-positive / 2-neutral / 1-low / 0-very low
+                    2) Energy: 3-active / 2-tired / 1-confused / 0-overwhelmed
+                    3) Loneliness: 3-not lonely / 2-missing family / 1-lonely / 0-very lonely
+                    4) Risk level: 2-High concern (Explicit risk phrases (fall, pain, scared) OR no response to 2 check-ins) / 1 – Soft concern (Mood worse than usual OR signs of loneliness) / 0 - OK (Mood stable or improved, no risk phrases)
+                    5) Short summary: for example "User feels lonely and a bit tired but no acute danger."
+                    IMPORTANT! Make sure to format your response the following way:
+                    {
+                    "mood_level": 0-3,
+                    "energy_level": 0-3,
+                    "loneliness_level": 0-3,
+                    "risk_level": 0-2,
+                    "summary": "short summary"
+                    }
+                    """,
+        )
+
+        print("CLASSIFICATION: ", classifications_response)
+
+        voice_response = client.responses.create(
+            model="o4-mini",
+            input="""An elderly person is telling you about their day. Analyze their message and comfort them.
+                        Make sure you're being supportive, while also allowing them to feel independent.
+                        Respond in a warm, respectful tone suitable for elderly users. Don’t give medical advice.""",
+        )
+
+        # TTS CONFIG
+
+        openai = AsyncOpenAI()
+
+        input = voice_response.output
+
+        print("INPUT: ", input)
+
+        instructions = """Voice Affect: Calm, composed, and reassuring; project quiet authority and confidence.
+                        Tone: Sincere, empathetic, and gently authoritative—express genuine apology while conveying competence.
+                        Pacing: Steady and moderate; unhurried enough to communicate care, yet efficient enough to demonstrate professionalism.
+                        Emotion: Genuine empathy and understanding; speak with warmth, especially during apologies (\"I'm very sorry for any disruption...\").
+                        Pronunciation: Clear and precise, emphasizing key reassurances (\"smoothly,\" \"quickly,\" \"promptly\") to reinforce confidence.
+                        Pauses: Brief pauses after offering assistance or requesting details, highlighting willingness to listen and support."""
+
+        async def main() -> None:
+            async with openai.audio.speech.with_streaming_response_create(
+                model="gpt-4o-mini-tts",
+                voice="echo",
+                input=input,
+                instructions=instructions,
+                response_format="pcm",
+            ) as response:
+                await LocalAudioPlayer().play(response)
+
+        if __name__ == "__main__":
+            asyncio.run(main())
+
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
