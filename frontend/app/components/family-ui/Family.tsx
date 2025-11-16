@@ -17,6 +17,7 @@ type AlertData = {
 export default function Family({ changeMode }: Props) {
     const [alerts, setAlerts] = useState<AlertData[]>([]);
     const [loading, setLoading] = useState(true);
+    const [solved, setSolved] = useState<Record<number, boolean>>({});
 
     useEffect(() => {
         async function fetchAlerts() {
@@ -45,14 +46,37 @@ export default function Family({ changeMode }: Props) {
             )}
 
             {!loading && alerts.length > 0 && (
-                alerts.map(a => (
-                    <Alert
-                        mood={a.mood_level}
-                        energy={a.energy_level}
-                        loneliness={a.loneliness_level}
-                        risk={a.risk_level}
-                        summary={a.summary}
-                    />
+                alerts.map((a, i) => (
+                    <div
+                        key={`${a.summary}-${i}`}
+                        className={solved[i] ? "opacity-60 grayscale" : ""}
+                    >
+                        <div className="flex items-center gap-2 px-8 pt-2">
+                            <input
+                                id={`solved-${i}`}
+                                type="checkbox"
+                                className="h-5 w-5 accent-emerald-600"
+                                checked={!!solved[i]}
+                                onChange={(e) =>
+                                    setSolved((s) => ({ ...s, [i]: e.target.checked }))
+                                }
+                            />
+                            <label
+                                htmlFor={`solved-${i}`}
+                                className="text-sm text-gray-700 select-none"
+                            >
+                                {solved[i] ? "Solved" : "Mark solved"}
+                            </label>
+                        </div>
+
+                        <Alert
+                            mood={a.mood_level}
+                            energy={a.energy_level}
+                            loneliness={a.loneliness_level}
+                            risk={a.risk_level}
+                            summary={a.summary}
+                        />
+                    </div>
                 ))
             )}
 
