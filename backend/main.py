@@ -12,13 +12,16 @@ from sqlmodel import Session
 from db import init_db
 import os, json, re, traceback
 import sqlite3
-from db import save_classification_from_output
+from db import get_connection, save_classification_from_output
+from contextlib import asynccontextmanager
 
 
 load_dotenv()
 
 app = FastAPI(title="Daily Check-In Companion API")
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY")) if os.getenv("OPENAI_API_KEY") else None
+client = (
+    OpenAI(api_key=os.getenv("OPENAI_API_KEY")) if os.getenv("OPENAI_API_KEY") else None
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,20 +32,40 @@ app.add_middleware(
 
 transcription_global: Optional[str] = None
 
-@app.on_event("startup")
-def _startup():
-    try:
-        init_db()
-    except Exception as e:
-        print("[startup:init_db]", e)
 
 @app.get("/ping")
 async def ping():
     return {"message": "pong"}
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: ensure DB and table exist
+    init_db()
+    yield
+
+
+@app.get("/classifications/")
+def list_classifications():
+    conn = get_connection()
+    try:
+        cur = conn.execute("SELECT * FROM mood_classifications")
+        rows = cur.fetchall()
+        keys = [
+            "id",
+            "mood_level",
+            "energy_level",
+            "loneliness_level",
+            "risk_level",
+            "summary",
+        ]
+        return [dict(zip(keys, row)) for row in rows]
+    finally:
+        conn.close()
+
+
 @app.post("/api/checkin/voice", tags=["Check-In"])
 async def process_audio(uploaded_file: UploadFile = File(...)):
-    global transcription_global
     try:
         contents = await uploaded_file.read()
         with open("audio.mp3", "wb") as f:
@@ -62,11 +85,9 @@ async def process_audio(uploaded_file: UploadFile = File(...)):
         else:
             text = "No OpenAI API key configured; transcription skipped."
 
-        transcription_global = text
-
         # GPT CONFIG
 
-        prompt = transcription_global
+        prompt = text
         print("PROMPT", prompt)
 
         classifications_response = client.responses.create(
@@ -90,9 +111,8 @@ async def process_audio(uploaded_file: UploadFile = File(...)):
                     """,
         )
 
-        print("CLASSIFICATION: ", classifications_response)
         classification = classifications_response.output[-1].content[0].text
-        print(classification)
+        print("CLASSIFICATION: ", classification)
         save_classification_from_output(classification)
         voice_response = client.responses.create(
             model="o4-mini",

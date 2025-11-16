@@ -18,7 +18,7 @@ frontend/.next/
 frontend/out/
 
 # production
-frontend/build
+frontend/public/speech.mp3
 
 # misc
 .DS_Store
@@ -33,10 +33,11 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
-# vercel
-.vercel
-
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-.database.db
+
+# backend
+backend/database.db
+backend/audio.mp3
+backend/__pycache__/

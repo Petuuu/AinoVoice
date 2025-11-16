@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import Alert from './Alert';
 import ModeButton from '../shared/ModeButton';
 
@@ -5,14 +6,55 @@ type Props = {
     changeMode: () => void;
 }
 
-export default function Family({changeMode}: Props) {
+type AlertData = {
+    mood_level: number;
+    energy_level: number;
+    loneliness_level: number;
+    risk_level: number;
+    summary: string;
+}
+
+export default function Family({ changeMode }: Props) {
+    const [alerts, setAlerts] = useState<AlertData[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchAlerts() {
+            try {
+                const res = await fetch('http://127.0.0.1:8000/classifications/');
+                if (!res.ok) throw new Error('Failed to fetch alerts');
+                const data: AlertData[] = await res.json();
+                setAlerts(data);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchAlerts();
+    }, []);
+
     return (
         <div>
-            <h1 className="text-6xl font-bold p-5"> Family dashboard </h1>
+            <h1 className="text-6xl font-bold p-5">Family Dashboard</h1>
 
-            {/* for alert in alerts (database?), print alert */}
-            <Alert mood={2} energy={2} loneliness={2} risk={2} summary="User fell in the woods and is in pain with low mood and energy but not feeling lonely; high risk due to the fall" />
-            <Alert mood={2} energy={2} loneliness={2} risk={1} summary="User fell in the woods and is in pain with low mood and energy but not feeling lonely; high risk due to the fall" />
+            {loading && <p>Loading alerts...</p>}
+
+            {!loading && alerts.length === 0 && (
+                <p>No alerts</p>
+            )}
+
+            {!loading && alerts.length > 0 && (
+                alerts.map(a => (
+                    <Alert
+                        mood={a.mood_level}
+                        energy={a.energy_level}
+                        loneliness={a.loneliness_level}
+                        risk={a.risk_level}
+                        summary={a.summary}
+                    />
+                ))
+            )}
 
             <ModeButton changeMode={changeMode} />
         </div>
