@@ -149,3 +149,11 @@ async def process_audio(uploaded_file: UploadFile = File(...)):
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+if __name__ == "__main__":
+    import uvicorn, os
+    uvicorn.run(
+        "main:app",
+        host="127.0.0.1",
+        port=int("8080"),
+        reload=False,
+    )
