@@ -30,7 +30,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-transcription_global: Optional[str] = None
+prompt = None
+input = None
 
 
 @app.get("/ping")
@@ -66,6 +67,8 @@ def list_classifications():
 
 @app.post("/api/checkin/voice", tags=["Check-In"])
 async def process_audio(uploaded_file: UploadFile = File(...)):
+    global prompt
+    global input
     try:
         contents = await uploaded_file.read()
         with open("audio.mp3", "wb") as f:

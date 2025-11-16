@@ -26,20 +26,17 @@ export default function Greeting({ listening, thinking = false }: Props) {
       })
       .catch(error => console.error('Error fetching greetings:', error));
 
-    return () => { cancelled = true; };
-  }, []);
+        return () => { cancelled = true };
+    }, [])
 
-  const displayText = listening
-    ? "Listening..."
-    : thinking
-      ? "AI is thinking..."
-      : greeting ?? "";
-
-  return (
-    <div className="flex justify-center mt-40" aria-live="polite">
-      <p className={`text-5xl font-bold ${thinking && !listening ? "animate-pulse" : ""}`}>
-        {displayText}
-      </p>
-    </div>
-  );
+    return (
+        <div className="flex justify-center">
+            <p className="text-4xl font-bold">
+                {listening
+                    ? "Listening..."
+                    : (greeting)
+                }
+            </p>
+        </div>
+    );
 }
