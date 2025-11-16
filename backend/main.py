@@ -59,7 +59,7 @@ def list_classifications():
             "risk_level",
             "summary",
         ]
-        return [dict(zip(keys, row)) for row in rows]
+        return [dict(zip(keys, row)) for row in rows[::-1]]
     finally:
         conn.close()
 
